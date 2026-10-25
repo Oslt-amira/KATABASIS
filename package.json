@@ -1,0 +1,31 @@
+{
+  "name": "katabasis",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "check": "tsc --noEmit",
+    "test:physics": "node --experimental-strip-types scripts/verify-nail-physics.mjs",
+    "test:graphics": "node --experimental-strip-types scripts/verify-graphics.mjs",
+    "test:audio": "node --experimental-strip-types scripts/verify-audio.mjs"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.12.0",
+    "gsap": "^3.13.0",
+    "lenis": "^1.3.0",
+    "lucide-react": "^0.468.0",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.180.0",
+    "typescript": "^5.9.0"
+  }
+}
