@@ -8,7 +8,7 @@ Mobile-first gothic scroll experience built with Next.js, GSAP ScrollTrigger, Le
 - `npm run dev` — local preview at http://localhost:3000
 - `npm run check` — TypeScript
 - `npm run test:graphics` — WebGL creation failures and context cleanup
-- `npm run test:audio` — opt-in playback, mute races, and audio cleanup
+- `npm run test:audio` — playback, mute races, and audio cleanup
 - `npm run build` — static production export in `out/`
 
 ## Sequence
@@ -47,7 +47,7 @@ The opening has separate cave, gate, and title parallax planes, plus a top-to-bo
 
 Only the nail layer requests WebGL. The cave, vignette, and drifting dust use CSS. The renderer preflights WebGL2 availability, uses a bounded pixel ratio and the default GPU preference, and explicitly releases its context on cleanup. If WebGL is unavailable or a context is lost, animated monochrome nail images follow the same Rapier simulation and editorial path. Append `?graphics=basic` locally to verify this fallback.
 
-The opt-in soundscape combines bowed harmonics, filtered cave air, and distant metallic bells through a long stereo reverberation. Its tone and room balance deepen with the descent. Playback fades on mute, suspends when the tab is hidden, and releases its audio graph on unmount. No external recording or autoplay is used.
+The soundscape combines bowed harmonics, filtered cave air, and distant metallic bells through a long stereo reverberation. Its tone and room balance deepen with the descent. Playback fades on mute, suspends when the tab is hidden, and releases its audio graph on unmount. The page requests autoplay and retries on the first interaction if the browser blocks it. No external recording is used.
 
 ## Responsive motion timing
 

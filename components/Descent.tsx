@@ -9,10 +9,15 @@ import { EDITORIAL_BEATS } from "./editorial";
 import { EVENT } from "./event";
 import { AmbientSoundscape } from "./ambient-soundscape";
 gsap.registerPlugin(ScrollTrigger);
-const chapters = ["Threshold", "Offering", "The fallen", "The gathering"];
+const chapters = [
+  { label: "Threshold", emblem: "gate" },
+  { label: "Offering", emblem: "scale" },
+  { label: "The fallen", emblem: "nail" },
+  { label: "The gathering", emblem: "goblet" },
+];
 export default function Descent() {
   const root = useRef<HTMLDivElement>(null),
-    scale = useRef<HTMLDivElement>(null),
+    scale = useRef<HTMLDivElement>(null), 
     lenis = useRef<Lenis | null>(null);
   const motion = useRef<MotionState>({
     progress: 0,
@@ -24,13 +29,47 @@ export default function Descent() {
     scaleAngle: 0,
     nailReady: false,
   });
-  const [chapter, setChapter] = useState(0),
-    [menu, setMenu] = useState(false),
-    [sound, setSound] = useState(false),
+  const [menu, setMenu] = useState(false),
+    [sound, setSound] = useState(true),
     [details, setDetails] = useState(false);
   const soundscape = useRef<AmbientSoundscape | null>(null),
-    soundIntent = useRef(false);
+    soundIntent = useRef(true);
   const [soundUnavailable, setSoundUnavailable] = useState(false);
+  const soundButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const gestures = new AbortController();
+    try {
+      const player = new AmbientSoundscape();
+      soundscape.current = player;
+      const start = () => {
+        if (!soundIntent.current || gestures.signal.aborted) return;
+        // A blocked resume can stay pending until a user gesture.
+        void player.setEnabled(true).then(
+          () => gestures.abort(),
+          () => {},
+        );
+      };
+      const onGesture = (event: Event) => {
+        if (event.target instanceof Node && soundButton.current?.contains(event.target)) return;
+        if (event instanceof KeyboardEvent && (event.repeat || event.ctrlKey || event.metaKey || event.altKey)) return;
+        start();
+      };
+      const options = { capture: true, signal: gestures.signal };
+      window.addEventListener("click", onGesture, options);
+      window.addEventListener("keydown", onGesture, options);
+      start();
+      return () => {
+        gestures.abort();
+        player.dispose();
+        if (soundscape.current === player) soundscape.current = null;
+      };
+    } catch {
+      gestures.abort();
+      soundIntent.current = false;
+      setSound(false);
+      setSoundUnavailable(true);
+    }
+  }, []);
   useEffect(() => {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     motion.current.reduced = reduced;
@@ -85,15 +124,6 @@ export default function Descent() {
           scrub: reduced ? true : 0.65,
           onUpdate: (self) => {
             motion.current.velocity = self.getVelocity();
-            setChapter(
-              self.progress < 0.18
-                ? 0
-                : self.progress < 0.62
-                  ? 1
-                  : self.progress < 0.92
-                    ? 2
-                    : 3,
-            );
           },
         },
       });
@@ -252,9 +282,6 @@ export default function Descent() {
       cancelAnimationFrame(raf);
       scroll.destroy();
       window.removeEventListener("pointermove", pointer);
-      soundscape.current?.dispose();
-      soundscape.current = null;
-      soundIntent.current = false;
     };
   }, []);
   useEffect(() => {
@@ -328,6 +355,7 @@ export default function Descent() {
         </button>
         <div className="header-actions">
           <button
+            ref={soundButton}
             onClick={toggleSound}
             disabled={soundUnavailable}
             title={
@@ -356,19 +384,6 @@ export default function Descent() {
           </button>
         </div>
       </header>
-      <nav className="chapter-rail" aria-label="Chapters">
-        {chapters.map((c, i) => (
-          <button
-            key={c}
-            onClick={() => go(i)}
-            className={chapter === i ? "active" : ""}
-            aria-label={`Chapter ${i + 1}: ${c}`}
-          >
-            <span>0{i + 1}</span>
-            <i />
-          </button>
-        ))}
-      </nav>
       <main className="descent-track">
         <div className="descent-stage">
           <div className="gate-parallax">
@@ -500,9 +515,6 @@ export default function Descent() {
           </section>
         </div>
       </main>
-      <div className="chapter-indicator" aria-hidden="true">
-        0{chapter + 1} <span>/ 04</span>
-      </div>
       {menu && (
         <div
           className="menu-overlay"
@@ -519,10 +531,10 @@ export default function Descent() {
             <X />
           </button>
           <nav>
-            {chapters.map((c, i) => (
-              <button key={c} onClick={() => go(i)}>
-                <span>0{i + 1}</span>
-                {c}
+            {chapters.map(({ label, emblem }, i) => (
+              <button key={emblem} onClick={() => go(i)}>
+                <span className={`chapter-emblem chapter-emblem--${emblem}`} aria-hidden="true" />
+                {label}
                 <ArrowUpRight size={20} />
               </button>
             ))}

@@ -1,4 +1,4 @@
-// An original, quiet chapel soundscape. Nothing plays before the sound button is pressed.
+// An original, quiet chapel soundscape. The page requests playback on load and retries after a user gesture if needed.
 // Bowed harmonics, filtered cave air and distant struck-metal overtones share a long room tail.
 export class AmbientSoundscape {
  private context:AudioContext;
